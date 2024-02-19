@@ -1,0 +1,5 @@
+func slope(yo, yi, xo, xi) {
+    give((yo - yi)/(xo - xi));
+}
+
+ret(slope(2, 0, 5, 4));
