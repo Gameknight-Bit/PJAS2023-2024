@@ -1,0 +1,30 @@
+func oldEnough(age, pCons) {
+
+    if (age >= 18) {
+        give(true);
+    } wif (pCons) {
+        give(true);
+    } else {
+        give(false);
+    }
+
+}
+
+--[[
+INPUTS:
+userAge = age of user
+parentAge = age of parent
+
+OUTPUT:
+1 = Allow User into Program
+0 = Disallow User into Program
+]]--
+
+var userAge = 10;
+var parentAge = 20;
+
+if (oldEnough(userAge, (parentAge >= 21))) {
+    ret(1);
+} else {
+    ret(0);
+}

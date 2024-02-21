@@ -1,0 +1,7 @@
+--[[
+This is an example of ASM at work :)
+]]--
+
+var exampleVariable = 10;
+
+ret(exampleVariable);

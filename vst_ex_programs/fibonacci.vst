@@ -1,0 +1,22 @@
+func fibonacci(count) {
+    --[[returns val in position #(count) in fib seq]]--
+    var a = 0;
+    var b = 1;
+    var c = 0;
+
+    count = count + 2;
+
+    var counter = 1;
+    while (counter <= count - 2) {
+        c = a + b;
+        a = b;
+        b = c;
+
+        counter = counter + 1;
+    }
+    give(c);
+}
+
+ret(fibonacci(9));
+
+

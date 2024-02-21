@@ -1,0 +1,15 @@
+func power(base, pow) {
+    var return = base;
+    var it = 0;
+
+    while (pow > 1) {
+        return = return * base;
+        ret(return);
+        pow = pow - 1;
+    }
+    give(return);
+}
+
+var ans = 0;
+
+ret(power(3,2));

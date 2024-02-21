@@ -214,13 +214,15 @@ public:
         std::visit(visitor, expr->var);
     }
 
-    void gen_scope(const NodeScope* scope) {
+    void gen_scope(const NodeScope* scope, bool optBool = true) {
         st_scope();
         for (const NodeStmt* stmt : scope->stmts){
             gen_stmt(stmt);
         }
 
-        ex_scope();
+        if (optBool == true) {
+            ex_scope();
+        }
     }
 
     void gen_params_dec(const NodeParamsDec* param, const NodeScope* scope){
@@ -241,7 +243,8 @@ public:
         for (const NodeStmt* stmt : scope->stmts){
             gen_stmt(stmt);
         }
-
+        m_out << "    mov rax, 0 ;;return 0 at end\n"; //return 0 if nothing else ret :)
+        m_out << "localend:" << "\n";
         ex_scope();
     }
 
@@ -287,7 +290,7 @@ public:
             void operator()(const NodeStmtGive* stmt_give) {
                 gen->gen_expr(stmt_give->expr);
                 gen->pop("rax");
-                gen->m_out << "    ret\n";
+                gen->m_out << "    jmp localend\n";
                 //gen->ex_scope(); //should exit scope as well :)
             }
             void operator()(const NodeStmtVar* stmt_var) {
@@ -312,7 +315,7 @@ public:
                 }
                 gen->gen_expr(stmt_assign->expr); //top of stack expression
                 gen->pop("rax");
-                gen->m_out << "    mov [rsp +" << (gen->m_stack_size - it->stack_location - 1) * 8  << "], rax \n";
+                gen->m_out << "    mov [rsp + " << (gen->m_stack_size - it->stack_location - 1) * 8  << "], rax \n";
             }
             void operator()(const NodeScope* scope) {
                 gen->gen_scope(scope);
@@ -358,15 +361,20 @@ public:
                 const std::string &temp = gen->m_out.str();
                 gen->m_out.seekp(0);
                 gen->m_out << stmt_func->ident.value.value() << ":\n";
+                gen->m_out << "    mov rcx, rsp ;; save pointer\n"; //This means no nested functions
+                // or just throw into stack :) ^^^^^^^^^ (TODO!!!)
                 if (stmt_func->params.has_value()) {
                     gen->m_vars.push_back({.name = stmt_func->ident.value.value(), .stack_location = gen->m_stack_size,
                         .param_num = stmt_func->params.value()->params.size()});
                     //reserves function name ident ^^
                     gen->gen_params_dec(stmt_func->params.value(), stmt_func->scope);
                 } else {
-                    gen->gen_scope(stmt_func->scope);
+                    gen->gen_scope(stmt_func->scope, false);
+                    gen->m_out << "    mov rax, 0 ;;return 0 at end\n"; //return 0 if nothing else ret :)
+                    gen->m_out << "localend:" << "\n";
+                    gen->ex_scope(); //THE REAL FIX IS TO SOMEHOW GET THIS FUNCTION UP TO GIVE STMT!!!
                 }
-                gen->m_out << "    mov rax, 0 ;;return 0 at end\n"; //return 0 if nothing else ret :)
+                gen->m_out << "    mov rsp, rcx ;; reinstate pointer\n";
                 gen->m_out << "    ret\n";
                 gen->m_out << "\n";
                 gen->m_out << temp;
